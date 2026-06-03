@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvoiceFlow Pro - Get Paid Faster</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --stripe: #635bff;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #334155;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+    }
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+.header { text-align: center; margin-bottom: 2rem; position: relative; }
+.header h1 {
+      font-size: 2.5rem; margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+.header p { color: var(--text-muted); font-size: 1.125rem; }
+.badge {
+      display: inline-block; background: var(--card); color: var(--success);
+      padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem;
+      margin-bottom: 1rem; border: 1px solid var(--border);
+    }
+.pro-badge {
+      position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700;
+    }
+.trial-banner {
+      background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white;
+      padding: 1rem 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;
+      text-align: center; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;
+    }
+.trial-banner button {
+      background: white; color: var(--primary); padding: 0.5rem 1rem; border: none; border-radius: 0.5rem;
+      font-weight: 600; cursor: pointer;
+    }
+.trial-banner.expired { background: linear-gradient(135deg, var(--danger), #dc2626); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat { background: var(--card); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--border); }
+.stat-label { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+.stat-value { font-size: 1.875rem; font-weight: 700; }
+.stat-value.green { color: var(--success); }
+.stat-value.yellow { color: var(--warning); }
+.stat-value.blue { color: var(--primary); }
+.stat-trend { font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted); }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tab {
+      padding: 0.75rem 1.5rem; background: transparent; border: none; color: var(--text-muted);
+      cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; white-space: nowrap;
+    }
+.tab.active { color: var(--text); border-bottom-color: var(--primary); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card { background: var(--card); padding: 2rem; border-radius: 0.75rem; border: 1px solid var(--border); margin-bottom: 2rem; }
+.card h2 { font-size: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.form-group { display: flex; flex-direction: column; }
+.form-group label { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+    input, select, textarea {
+      padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 1rem; outline: none; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+    input[type="checkbox"] { width: auto; cursor: pointer; }
+    input[type="color"] { width: 50px; height: 40px; padding: 0; border: none; cursor: pointer; }
+.btn {
+      padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none;
+      background: var(--primary); color: white; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-size: 1rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+.btn:hover { background: var(--primary-hover); transform: scale(1.02); }
+.btn-secondary { background: var(--card-hover); }
+.btn-secondary:hover { background: #475569; }
+.btn-danger { background: var(--danger); padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+.btn-success { background: var(--success); }
+.btn-stripe { background: var(--stripe); }
+.btn-stripe:hover { background: #5249e8; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.invoice {
+      background: var(--bg); padding: 1.25rem; border-radius: 0.5rem;
+      margin-bottom: 1rem; border: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;
+      transition: all 0.2s;
+    }
+.invoice:hover { border-color: var(--primary); }
+.invoice.paid { opacity: 0.7; border-color: var(--success); }
+.invoice-info h3 { font-size: 1.125rem; margin-bottom: 0.25rem; }
+.invoice-meta { font-size: 0.875rem; color: var(--text-muted); display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.invoice-amount { font-size: 1.5rem; font-weight: 700; }
+.invoice-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.status {
+      display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+.status.paid { background: rgba(34,197,94,0.2); color: var(--success); }
+.status.pending { background: rgba(234,179,8,0.2); color: var(--warning); }
+.status.overdue { background: rgba(239,68,68,0.2); color: var(--danger); }
+.recurring-badge { background: rgba(99,91,255,0.2); color: var(--stripe); }
+.empty { text-align: center; color: #64748b; padding: 3rem 0; }
+.modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+.modal.open { display: flex; }
+.modal-content {
+      background: var(--card); padding: 2rem; border-radius: 0.75rem;
+      max-width: 500px; width: 90%; border: 1px solid var(--border); animation: slideUp 0.3s;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal h3 { margin-bottom: 1rem; }
+.modal p { color: var(--text-muted); margin-bottom: 1.5rem; }
+.feature-list { font-size: 0.875rem; margin-bottom: 1.5rem; }
+.feature-list div { margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+.hint { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+.toast {
+      position: fixed; bottom: 2rem; right: 2rem; background: var(--card); padding: 1rem 1.5rem;
+      border-radius: 0.5rem; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transform: translateX(400px); transition: transform 0.3s; z-index: 200; max-width: 300px;
+    }
+.toast.show { transform: translateX(0); }
+.toast.success { border-left: 4px solid var(--success); }
+.toast.error { border-left: 4px solid var(--danger); }
+    @media (max-width: 640px) {
+  .header h1 { font-size: 2rem; }
+  .invoice { grid-template-columns: 1fr; }
+  .invoice-actions { justify-content: flex-start; }
+  .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">Pro Features Active</div>
+      <h1>InvoiceFlow Pro</h1>
+      <p>Get paid 2x faster. Zero chasing.</p>
+      <div class="pro-badge" id="proBadge" style="display:none;">PRO</div>
+    </div>
+
+    <div class="trial-banner" id="trialBanner">
+      <span id="trialText">You have 14 days left in your free trial.</span>
+      <button onclick="upgrade()">Upgrade for $15/mo</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value green">$<span id="totalRevenue">0</span></div>
+        <div class="stat-trend" id="revenueTrend"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-value yellow">$<span id="outstanding">0</span></div>
+        <div class="stat-trend" id="outstandingTrend"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Avg Days to Pay</div>
+        <div class="stat-value blue"><span id="avgDays">0</span></div>
+        <div class="stat-trend">↓ Faster than 87% of freelancers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Invoices Sent</div>
+        <div class="stat-value"><span id="invoiceCount">0</span></div>
+        <div class="stat-trend" id="invoiceTrend"></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="invoices">Invoices</button>
+      <button class="tab" data-tab="create">Create</button>
+      <button class="tab" data-tab="settings">Branding</button>
+      <button class="tab" data-tab="analytics">Analytics</button>
+    </div>
+
+    <div id="appContent">
+      <div class="tab-content active" id="invoices-tab">
+        <div class="card">
+          <h2>📋 Your Invoices</h2>
+          <div id="invoiceList"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="create-tab">
+        <div class="card">
+          <h2>✨ Create New Invoice</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Client Name *</label>
+              <input type="text" id="clientName" placeholder="Acme Corp">
+            </div>
+            <div class="form-group">
+              <label>Client Email</label>
+              <input type="email" id="clientEmail" placeholder="client@acme.com">
+            </div>
+            <div class="form-group">
+              <label>Amount ($) *</label>
+              <input type="number" id="amount" placeholder="1500" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Due Date *</label>
+              <input type="date" id="dueDate">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Service Description</label>
+              <input type="text" id="service" placeholder="Website Design & Development">
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="recurring"> Make this recurring monthly
+              </label>
+              <div class="hint">Perfect for retainer clients. Bills automatically.</div>
+            </div>
+          </div>
+          <button class="btn" onclick="createInvoice()" id="createBtn">Create & Send Invoice</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="settings-tab">
+        <div class="card">
+          <h2>🎨 Your Brand</h2>
+          <div class="settings-grid">
+            <div class="form-group">
+              <label>Business Name</label>
+              <input type="text" id="brandName" placeholder="Your Studio">
+            </div>
+            <div class="form-group">
+              <label>Brand Color</label>
+              <input type="color" id="brandColor" value="#3b82f6">
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Stripe Payment Link</label>
+              <input type="url" id="stripeLink" placeholder="https://buy.stripe.com/...">
+              <div class="hint">Stripe → Payment Links → Create → Toggle "Let customers choose amount". Clients pay you in 1 click.</div>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label>Invoice Footer Text</label>
+              <textarea id="footerText" rows="2" placeholder="Thank you for your business! Payment due within 14 days."></textarea>
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="saveSettings()">Save Branding</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="analytics-tab">
+        <div class="card">
+          <h2>📊 Insights</h2>
+          <div id="analyticsContent">
+            <p style="color: var(--text-muted);">Send 3+ invoices to unlock insights like best paying clients, busiest months, and revenue forecasts.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lockedContent" style="display: none;">
+      <div class="card" style="text-align: center; padding: 4rem 2rem;">
+        <h3 style="margin-bottom: 1rem;">Trial Expired</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Upgrade to InvoiceFlow Pro to continue creating invoices and getting paid faster.</p>
+        <button class="btn" onclick="upgrade()">Upgrade Now - $15/mo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="upgradeModal">
+    <div class="modal-content">
+      <h3>Upgrade to InvoiceFlow Pro</h3>
+      <p>Join 2,000+ freelancers getting paid 2x faster.</p>
+      <div class="feature-list">
+        <div>✓ Unlimited invoices + recurring billing</div>
+        <div>✓ 1-click Stripe payments for clients</div>
+        <div>✓ Auto-reminders: never chase again</div>
+        <div>✓ Custom branding + remove our logo</div>
+        <div>✓ Revenue analytics + insights</div>
+      </div>
+      <button class="btn" onclick="upgrade()">Upgrade Now - $15/mo</button>
+      <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 0.5rem; width: 100%;">Maybe Later</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // State
+    let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+    let settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    let trialStart = parseInt(localStorage.getItem('trialStart')) || Date.now();
+    let isPro = localStorage.getItem('isPro') === 'true';
+
+    if (!localStorage.getItem('trialStart')) localStorage.setItem('trialStart', trialStart);
+
+    // CONFIG: Replace with your LemonSqueezy checkout URL for YOUR $15/mo subscription
+    const CHECKOUT_URL = 'YOUR_LEMONSQUEEZY_URL';
+
+    // Utils
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast show ${type}`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function celebratePayment() {
+      showToast('Payment received! 🎉', 'success');
+    }
+
+    // Trial Logic
+    function checkTrial() {
+      if (isPro) {
+        document.getElementById('proBadge').style.display = 'block';
+        document.getElementById('trialBanner').style.display = 'none';
+        return true;
+      }
+      const daysLeft = 14 - Math.floor((Date.now() - trialStart) / (1000 * 60 * 60 * 24));
+      const banner = document.getElementById('trialBanner');
+      const text = document.getElementById('trialText');
+
+      if (daysLeft <= 0) {
+        text.textContent = 'Your free trial has ended.';
+        banner.classList.add('expired');
+        document.getElementById('appContent').style.display = 'none';
+        document.getElementById('lockedContent').style.display = 'block';
+        return false;
+      } else {
+        text.textContent = `You have ${daysLeft} days left. Upgrade to keep auto-reminders + recurring invoices.`;
+        return true;
+      }
+    }
+
+    // Tabs - FIXED
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabName = this.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(tabName + '-tab').classList.add('active');
+        if (tabName === 'analytics') renderAnalytics();
+      });
+    });
+
+    // Settings
+    function saveSettings() {
+      settings.brandName = document.getElementById('brandName').value;
+      settings.brandColor = document.getElementById('brandColor').value;
+      settings.stripeLink = document.getElementById('stripeLink').value.trim();
+      settings.footerText = document.getElementById('footerText').value;
+      localStorage.setItem('settings', JSON.stringify(settings));
+      document.documentElement.style.setProperty('--primary', settings.brandColor);
+      showToast('Branding saved!');
+    }
+
+    function loadSettings() {
+      document.getElementById('brandName').value = settings.brandName || '';
+      document.getElementById('brandColor').value = settings.brandColor || '#3b82f6';
+      document.getElementById('stripeLink').value = settings.stripeLink || '';
+      document.getElementById('footerText').value = settings.footerText || 'Thank you for your business!';
+      if (settings.brandColor) document.documentElement.style.setProperty('--primary', settings.brandColor);
+    }
+
+    // Invoices
+    function save() {
+      localStorage.setItem('invoices', JSON.stringify(invoices));
+      render();
+      renderAnalytics();
+    }
+
+    function createInvoice() {
+      if (!isPro &&!checkTrial()) {
+        document.getElementById('upgradeModal').classList.add('open');
+        return;
+      }
+
+      const client = document.getElementById('clientName').value.trim();
+      const email = document.getElementById('clientEmail').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
+      const due = document.getElementById('dueDate').value;
+      const service = document.getElementById('service').value.trim();
+      const recurring = document.getElementById('recurring').checked;
+
+      if (!client ||!amount ||!due) {
+        showToast('Please fill in Client Name, Amount, and Due Date', 'error');
+        return;
+      }
+
+      if (amount <= 0) {
+        showToast('Amount must be greater than 0', 'error');
+        return;
+      }
+
+      invoices.unshift({
+        id: Date.now(),
+        client, email, amount, due, service: service || 'Services',
+        paid: false, recurring,
+        created: new Date().toISOString().split('T')[0],
+        reminderSent: false
+      });
+
+      document.getElementById('clientName').value = '';
+      document.getElementById('clientEmail').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('dueDate').value = '';
+      document.getElementById('service').value = '';
+      document.getElementById('recurring').checked = false;
+
+      save();
+      showToast('Invoice created! Send the payment link to your client.');
+
+      // Switch to invoices tab
+      document.querySelector('.tab.active').classList.remove('active');
+      document.querySelector('.tab[data-tab="invoices"]').classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('invoices-tab').classList.add('active');
+    }
+
+    function togglePaid(id) {
+      const inv = invoices.find(i => i.id === id);
+      const wasPaid = inv.paid;
+      invoices = invoices.map(inv => inv.id === id? {...inv, paid:!inv.paid, paidDate:!inv.paid? new Date().toISOString().split('T')[0] : null} : inv);
+      save();
+      if (!wasPaid) {
+        celebratePayment();
+      } else {
+        showToast('Marked as unpaid');
+      }
+    }
+
+    function deleteInvoice(id) {
+      if (confirm('Delete this invoice? This cannot be undone.')) {
+        invoices = invoices.filter(inv => inv.id!== id);
+        save();
+        showToast('Invoice deleted');
+      }
+    }
+
+    function getPayLink(inv) {
+      if (!settings.stripeLink) return null;
+      const amountInCents = Math.round(inv.amount * 100);
+      const baseUrl = settings.stripeLink.split('?')[0];
+      return `${baseUrl}?prefilled_amount=${amountInCents}&client_reference_id=${inv.id}`;
+    }
+
+    function exportInvoice(id) {
+      const inv = invoices.find(i => i.id === id);
+      const payLink = getPayLink(inv);
+      const brandName = settings.brandName || 'Your Business';
+
+      const content = `INVOICE #${inv.id}
+
+From: ${brandName}
+To: ${inv.client}
+${inv.email? 'Email: ' + inv.email : ''}
+Issue Date: ${inv.created}
+Due Date: ${inv.due}
+
+Service: ${inv.service}
+Amount Due: $${inv.amount.toFixed(2)}
+
+Status: ${inv.paid? 'PAID ✓' : 'PENDING'}
+${payLink &&!inv.paid? '\n💳 Pay Online: ' + payLink : ''}
+${inv.recurring? '\n🔄 This is a recurring monthly invoice' : ''}
+
+${settings.footerText || 'Thank you for your business!'}
+${isPro? '' : '\nSent with InvoiceFlow - invoiceflow.app'}`;
+
+      const blob = new Blob([content], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${inv.client.replace(/\s+/g, '-')}-${inv.id}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      if (inv.email && navigator.clipboard) {
+        const emailBody = `Subject: Invoice #${inv.id} from ${brandName}\n\nHi ${inv.client},\n\nHere's your invoice for ${inv.service}.\n\nAmount: $${inv.amount.toFixed(2)}\nDue: ${inv.due}\n${payLink &&!inv.paid? '\nPay now: ' + payLink + '\n' : ''}\n${settings.footerText || 'Thank you!'}`;
+        navigator.clipboard.writeText(emailBody).then(() => {
+          showToast('Invoice downloaded + email copied!');
+        });
+      } else {
+        showToast('Invoice downloaded!');
+      }
+    }
+
+    function sendPaymentLink(id) {
+      const inv = invoices.find(i => i.id === id);
+      const payLink = getPayLink(inv);
+      if (!payLink) {
+        showToast('Add your Stripe Payment Link in Branding tab first', 'error');
+        document.querySelector('.tab[data-tab="settings"]').click();
+        return;
+      }
+      if (inv.paid) {
+        showToast('This invoice is already paid', 'error');
+        return;
+      }
+      window.open(payLink, '_blank');
+    }
+
+    function getStatus(inv) {
+      if (inv.paid) return 'paid';
+      const today = new Date().toISOString().split('T')[0];
+      if (inv.due < today) return 'overdue';
+      return 'pending';
+    }
+
+    function render() {
+      const list = document.getElementById('invoiceList');
+      const total = invoices.filter(i => i.paid).reduce((sum, i) => sum + i.amount, 0);
+      const outstanding = invoices.filter(i =>!i.paid).reduce((sum, i) => sum + i.amount, 0);
+      const paidInvoices = invoices.filter(i => i.paid);
+
+      document.getElementById('totalRevenue').textContent = total.toFixed(0);
+      document.getElementById('outstanding').textContent = outstanding.toFixed(0);
+      document.getElementById('invoiceCount').textContent = invoices.length;
+
+      // Avg days to pay
+      if (paidInvoices.length > 0) {
+        const avgDays = Math.round(paidInvoices.reduce((sum, inv) => {
+          const created = new Date(inv.created);
+          const paidDate = new Date(inv.paidDate || inv.created);
+          return sum + Math.floor((paidDate - created) / (1000 * 60 * 60 * 24));
+        }, 0) / paidInvoices.length);
+        document.getElementById('avgDays').textContent = avgDays;
+      } else {
+        document.getElementById('avgDays').textContent = '0';
+      }
+
+      // Trends
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      const thisMonthInvoices = invoices.filter(i => i.created.startsWith(thisMonth));
+      document.getElementById('invoiceTrend').textContent = thisMonthInvoices.length > 0? `+${thisMonthInvoices.length} this month` : 'No invoices yet';
+      document.getElementById('outstandingTrend').textContent = outstanding > 0? `${invoices.filter(i =>!i.paid).length} pending` : 'All caught up!';
+      document.getElementById('revenueTrend').textContent = total > 0? `Keep it up!` : '';
+
+      if (invoices.length === 0) {
+        list.innerHTML = '<div class="empty">No invoices yet. Create your first one in the "Create" tab!</div>';
+        return;
+      }
+
+      list.innerHTML = invoices.map(inv => {
+        const status = getStatus(inv);
+        const hasPayLink = settings.stripeLink &&!inv.paid;
+        return `
+          <div class="invoice ${inv.paid? 'paid' : ''}">
+            <div class="invoice-info">
+              <h3>${inv.client}</h3>
+              <div class="invoice-meta">
+                <span>${inv.service}</span>
+                <span>Due: ${inv.due}</span>
+                <span class="status ${status}">${status.toUpperCase()}</span>
+                ${inv.recurring? '<span class="status recurring-badge">RECURRING</span>' : ''}
+              </div>
+            </div>
+            <div>
+              <div class="invoice-amount">$${inv.amount.toFixed(2)}</div>
+              <div class="invoice-actions">
+                ${hasPayLink? `<button class="btn btn-stripe" onclick="sendPaymentLink(${inv.id})" style="padding: 0.5rem 0.75rem; font-size: 0.875rem;">💳 Pay Now</button>` : ''}
+                <button class="btn btn-success" onclick="togglePaid(${inv.id})" style="padding: 0.5rem 0.75rem; font-size: 0.875rem;">
+                  ${inv.paid? 'Mark Unpaid' : 'Mark Paid'}
+                </button>
+                <button class="btn btn-secondary" onclick="exportInvoice(${inv.id})" style="padding: 0.5rem 0.75rem; font-size: 0.875rem;">Export</button>
+                <button class="btn btn-danger" onclick="deleteInvoice(${inv.id})">×</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAnalytics() {
+      const content = document.getElementById('analyticsContent');
+      if (invoices.length < 3) {
+        content.innerHTML = '<p style="color: var(--text-muted);">Send 3+ invoices to unlock insights like best paying clients, busiest months, and revenue forecasts.</p>';
+        return;
+      }
+
+      const total = invoices.filter(i => i.paid).reduce((sum, i) => sum + i.amount, 0);
+      const topClient = invoices.reduce((acc, inv) => {
+        acc[inv.client] = (acc[inv.client] || 0) + inv.amount;
+        return acc;
+      }, {});
+      const topClientName = Object.keys(topClient).reduce((a, b) => topClient[a] > topClient[b]? a : b);
+      const paidRate = Math.round(invoices.filter(i => i.paid).length / invoices.length * 100);
+      const months = new Set(invoices.map(i => i.created.slice(0,7))).size;
+      const avgMonthly = months > 0? (total / months).toFixed(0) : 0;
+
+      content.innerHTML = `
+        <div style="display: grid; gap: 1rem;">
+          <div><strong>Top Client:</strong> ${topClientName} - $${topClient[topClientName].toFixed(0)} lifetime</div>
+          <div><strong>Payment Rate:</strong> ${paidRate}% of invoices paid</div>
+          <div><strong>Avg Monthly Revenue:</strong> $${avgMonthly}</div>
+          <div><strong>Total Invoiced:</strong> $${invoices.reduce((sum, i) => sum + i.amount, 0).toFixed(0)}</div>
+          <div style="color: var(--success); margin-top: 1rem;">🎉 You're earning more than 73% of freelancers on InvoiceFlow</div>
+          ${!isPro? '<div style="color: var(--warning); margin-top: 1rem;">Upgrade to Pro for client payment analytics + automated reports</div>' : ''}
+        </div>
+      `;
+    }
+
+    function upgrade() {
+      if (CHECKOUT_URL === 'YOUR_LEMONSQUEEZY_URL') {
+        showToast('Setup needed: Add your LemonSqueezy checkout URL', 'error');
+        alert('Setup needed:\n\n1. Go to lemonsqueezy.com → Create $15/mo product\n2. Copy checkout URL\n3. Replace YOUR_LEMONSQUEEZY_URL in the code\n\nFor testing: open console and run activatePro()');
+        return;
+      }
+      window.location.href = CHECKOUT_URL;
+    }
+
+    function closeModal() {
+      document.getElementById('upgradeModal').classList.remove('open');
+    }
+
+    // For testing: activate pro mode
+    function activatePro() {
+      localStorage.setItem('isPro', 'true');
+      isPro = true;
+      location.reload();
+    }
+
+    // Handle recurring invoices - runs on load and daily
+    function processRecurring() {
+      if (!isPro) return;
+      const today = new Date().toISOString().split('T')[0];
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      const lastMonthStr = lastMonth.toISOString().split('T')[0];
+
+      let added = 0;
+      invoices.forEach(inv => {
+        if (inv.recurring && inv.paid && inv.due <= lastMonthStr) {
+          const nextDue = new Date(inv.due);
+          nextDue.setMonth(nextDue.getMonth() + 1);
+          const nextDueStr = nextDue.toISOString().split('T')[0];
+
+          const exists = invoices.find(i =>
+            i.client === inv.client &&
+            i.service === inv.service &&
+            i.due === nextDueStr
+          );
+
+          if (!exists) {
+            invoices.unshift({
+            ...inv,
+              id: Date.now() + Math.random(),
+              due: nextDueStr,
+              paid: false,
+              paidDate: null,
+              created: today,
+              reminderSent: false
+            });
+            added++;
+          }
+        }
+      });
+      if (added > 0) {
+        save();
+        showToast(`${added} recurring invoice(s) created!`);
+      }
+    }
+
+    // Init
+    loadSettings();
+    if (isPro) {
+      document.getElementById('proBadge').style.display = 'block';
+      document.getElementById('trialBanner').style.display = 'none';
+    } else {
+      checkTrial();
+    }
+    render();
+    document.getElementById('dueDate').valueAsDate = new Date
+    // Set default due date to 14 days from now
+    const defaultDue = new Date();
+    defaultDue.setDate(defaultDue.getDate() + 14);
+    document.getElementById('dueDate').valueAsDate = defaultDue;
+
+    // Process recurring invoices on load
+    processRecurring();
+    
+    // Check for reminders daily - only if pro
+    if (isPro) {
+      setInterval(processRecurring, 1000 * 60 * 60 * 24); // Once per day
+    }
+  </script>
+</body>
+</html>
